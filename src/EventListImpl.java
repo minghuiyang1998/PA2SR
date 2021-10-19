@@ -1,15 +1,14 @@
-import java.util.Vector;
+import java.util.*;
 
-public class EventListImpl implements EventList
-{
-    private Vector<Event> data; // TODO: arrayList
+public class EventListImpl implements EventList {
+    private List<Event> data;
 
     public EventListImpl() {
-        data = new Vector<Event>();
+        data = new ArrayList<>();
     }
 
     public boolean add(Event e) {
-        data.addElement(e);
+        data.add(e);
         return true;
     }
 
@@ -19,17 +18,17 @@ public class EventListImpl implements EventList
         }
 
         int firstIndex = 0;
-        double first = ((Event)data.elementAt(firstIndex)).getTime();
+        double first = ((Event)data.get(firstIndex)).getTime();
         for (int i = 0; i < data.size(); i++) {
-            if (((Event)data.elementAt(i)).getTime() < first)
+            if (((Event)data.get(i)).getTime() < first)
             {
-                first = ((Event)data.elementAt(i)).getTime();
+                first = ((Event)data.get(i)).getTime();
                 firstIndex = i;
             }
         }
 
-        Event next = (Event)data.elementAt(firstIndex);
-        data.removeElement(next);
+        Event next = (Event)data.get(firstIndex);
+        data.remove(next);
 
         return next;
     }
@@ -43,9 +42,9 @@ public class EventListImpl implements EventList
         Event timer = null;
 
         for (int i = 0; i < data.size(); i++) {
-            if ((((Event)(data.elementAt(i))).getType() ==
+            if ((((Event)(data.get(i))).getType() ==
                     NetworkSimulator.TIMERINTERRUPT) &&
-                    (((Event)(data.elementAt(i))).getEntity() == entity))
+                    (((Event)(data.get(i))).getEntity() == entity))
             {
                 timerIndex = i;
                 break;
@@ -53,8 +52,8 @@ public class EventListImpl implements EventList
         }
 
         if (timerIndex != -1) {
-            timer = (Event)(data.elementAt(timerIndex));
-            data.removeElement(timer);
+            timer = (Event)(data.get(timerIndex));
+            data.remove(timer);
         }
 
         return timer;
@@ -64,11 +63,11 @@ public class EventListImpl implements EventList
     public double getLastPacketTime(int entityTo) {
         double time = 0;
         for (int i = 0; i < data.size(); i++) {
-            if ((((Event)(data.elementAt(i))).getType() ==
+            if ((((Event)(data.get(i))).getType() ==
                     NetworkSimulator.FROMLAYER3) &&
-                    (((Event)(data.elementAt(i))).getEntity() == entityTo))
+                    (((Event)(data.get(i))).getEntity() == entityTo))
             {
-                time = ((Event)(data.elementAt(i))).getTime();
+                time = ((Event)(data.get(i))).getTime();
             }
         }
 
