@@ -59,7 +59,7 @@ public abstract class NetworkSimulator {
         rand = new OSIRandom(seed);
         try{
             outFile = new FileWriter("OutputFile");
-        }catch (Exception e) {e.printStackTrace();}
+        } catch (Exception e) {e.printStackTrace();}
 
         nSim = 0;
         nToLayer3 = 0;
@@ -142,7 +142,7 @@ public abstract class NetworkSimulator {
                     if (nSim == maxMessages+1) break;
 
                     // Let the student handle the new message
-                    a.Output(new Message(new String(nextMessage)));
+                    a.output(new Message(new String(nextMessage)));
                     break;
 
                 default:
@@ -298,7 +298,7 @@ public abstract class NetworkSimulator {
         try{
             outFile.write(dataSent,0,MAXDATASIZE);
             outFile.write('\n');
-        }catch (Exception e) {e.printStackTrace();}
+        } catch (Exception e) {e.printStackTrace();}
     }
 
     protected double getTime() {
