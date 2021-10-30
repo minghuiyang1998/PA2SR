@@ -144,7 +144,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // initialization (e.g. of member variables you add to control the state
     // of entity A).
      AEntity aInit() {
-        return new AEntity(WindowSize);
+        return new AEntity(WindowSize, LimitSeqNo, RxmtInterval);
      }
 
     // This routine will be called whenever a packet sent from the B-side 

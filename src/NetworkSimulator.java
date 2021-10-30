@@ -299,7 +299,7 @@ public abstract class NetworkSimulator {
         } catch (Exception e) {e.printStackTrace();}
     }
 
-    protected double getTime() {
+    protected static double getTime() {
         return time;
     }
 
