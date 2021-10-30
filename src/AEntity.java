@@ -9,16 +9,18 @@ public class AEntity {
     private int tempSeqNum; // the sequence number that
     private int windowStartNum;   // this value is also equal to the first unAcked sequence number
     private int packetLastSend;
+    private boolean hasResent;
     private Checksum checksum;
     private HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
     private HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
-//    private ArrayList<Boolean> window;  // record the Ack state of each packet in window
+
 
     public AEntity(int windowSize) {
         this.windowSize = windowSize;
         this.tempSeqNum = 0;
         this.windowStartNum = 0;
         this.packetLastSend = 0;
+        this.hasResent = false;
         this.checksum = new Checksum();
         this.buffer = new HashMap<>();
         this.bufferForSend = new HashMap<>();
@@ -63,12 +65,13 @@ public class AEntity {
             int ackedNum = packet.getAcknum();
             // if the packet is acknowledged, then remove it from the buffer
             buffer.remove(ackedNum-1);
-            if(ackedNum == windowStartNum) {
+            if(ackedNum == windowStartNum && !hasResent) {
                 // this means it is a duplicate ack, retransmit the first unAcked packet, which is windowStartNum
                 Packet retransmitPacket = buffer.get(windowStartNum);
                 NetworkSimulator.toLayer3(0, retransmitPacket);
                 // timer?
-
+                NetworkSimulator.startTimer(0, 20);
+                hasResent = true;
             } else {
                 // received the cumulative acknowledgement
                 windowStartNum = ackedNum;
@@ -77,9 +80,12 @@ public class AEntity {
             // if not in waiting state, check if there are available packets to be sent in bufferForSend
             if (isNotWaiting(packetLastSend) && !bufferForSend.isEmpty()) {
                for( ; bufferForSend.isEmpty() || !isNotWaiting(packetLastSend); packetLastSend++) {
-                   Packet sendPacket = bufferForSend.get(packetLastSend+1);
+                   packetLastSend %= 2*windowSize;
+                   Packet sendPacket = bufferForSend.get((packetLastSend+1)%(2*windowSize));
                    NetworkSimulator.toLayer3(0, sendPacket);
-                   bufferForSend.remove(packetLastSend+1);
+                   // timer?
+
+                   bufferForSend.remove((packetLastSend+1)%(2*windowSize));
                }
             }
         }
@@ -111,6 +117,9 @@ public class AEntity {
      * @return true if it is not in waiting state, false otherwise
      */
     private boolean isNotWaiting(int packetLastSend) {
-        return packetLastSend - windowStartNum + 1 < windowSize;
+        if(packetLastSend > windowStartNum)
+            return packetLastSend - windowStartNum + 1 < windowSize;
+        else
+            return packetLastSend + 2*windowSize - windowStartNum + 1 < windowSize;
     }
 }
