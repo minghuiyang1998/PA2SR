@@ -129,6 +129,6 @@ public class AEntity {
         if(packetLastSend > windowStartNum)
             return packetLastSend - windowStartNum + 1 < windowSize;
         else
-            return packetLastSend + 2*windowSize - windowStartNum + 1 < windowSize;
+            return packetLastSend + limitSeqNum - windowStartNum + 1 < windowSize;
     }
 }
