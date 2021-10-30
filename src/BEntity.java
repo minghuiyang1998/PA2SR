@@ -26,7 +26,7 @@ public class BEntity {
     }
 
     private void sendCumulativeACK() {
-        final int ID = 0;
+        final int ID = 1;
         int seqNumb = 0;
         int ackNumb = next;
         String payload = "";
