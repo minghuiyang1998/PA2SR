@@ -1,4 +1,7 @@
 public class BEntity {
+    BEntity() {
+
+    }
 
     public void init() {
 

@@ -1,4 +1,8 @@
 public class AEntity {
+    AEntity() {
+
+    }
+    
     public void init() {
 
     }
