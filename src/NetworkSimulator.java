@@ -30,8 +30,8 @@ public abstract class NetworkSimulator {
     private static int nCorrupt;
     private static double time;
 
-    private AEntity a;
-    private BEntity b;
+    AEntity a;
+    BEntity b;
 //    protected abstract void aOutput(Message message);
 //    protected abstract void aInput(Packet packet);
 //    protected abstract void aTimerInterrupt();

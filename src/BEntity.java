@@ -6,6 +6,8 @@ public class BEntity {
     private final HashMap<Integer, Packet> outOfOrderBuffer;
     private int next;
     private int rightBound;
+    private int countACK = 0;
+    private int countTo5 = 0;
 
     BEntity(int windowSize) {
         this.windowSize = windowSize;
@@ -15,6 +17,14 @@ public class BEntity {
         this.rightBound = 0;
     }
 
+    public int getCountTo5() {
+        return countTo5;
+    }
+
+    public int getCountACK() {
+        return countACK;
+    }
+
     private void sendCumulativeACK() {
         final int ID = 0;
         int seqNumb = 0;
@@ -22,6 +32,7 @@ public class BEntity {
         String payload = "";
         int check = checksum.calculateChecksum(seqNumb, ackNumb, payload);
         NetworkSimulator.toLayer3(ID, new Packet(seqNumb, ackNumb, check, payload));
+        countACK += 1;
     }
 
     private void dealWithOutOfOrder(Packet packet) {
@@ -37,6 +48,7 @@ public class BEntity {
         String payload = packet.getPayload();
         // send all this consecutive to layer5
         NetworkSimulator.toLayer5(payload);
+        countTo5 += 1;
         next += 1;
     }
 
