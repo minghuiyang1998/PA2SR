@@ -84,7 +84,7 @@ public class AEntity {
                    Packet sendPacket = bufferForSend.get((packetLastSend+1)%(2*windowSize));
                    NetworkSimulator.toLayer3(0, sendPacket);
                    // timer?
-
+                   NetworkSimulator.startTimer(0, 20);
                    bufferForSend.remove((packetLastSend+1)%(2*windowSize));
                }
             }
