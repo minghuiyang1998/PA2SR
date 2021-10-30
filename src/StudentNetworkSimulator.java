@@ -161,7 +161,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // initialization (e.g. of member variables you add to control the state
     // of entity B).
      BEntity bInit() {
-        return new BEntity(WindowSize);
+        return new BEntity(WindowSize, LimitSeqNo);
      }
 
     // Use to print final statistics

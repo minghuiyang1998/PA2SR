@@ -2,6 +2,7 @@ import java.util.HashMap;
 
 public class BEntity {
     private final int windowSize;
+    private final int limitSeqNumb;
     private final Checksum checksum;
     private final HashMap<Integer, Packet> outOfOrderBuffer;
     private int next;
@@ -9,8 +10,9 @@ public class BEntity {
     private int countACK = 0;
     private int countTo5 = 0;
 
-    BEntity(int windowSize) {
+    BEntity(int windowSize, int limitSeqNumb) {
         this.windowSize = windowSize;
+        this.limitSeqNumb = limitSeqNumb;
         this.checksum = new Checksum();
         this.outOfOrderBuffer = new HashMap<>();
         this.next = 0;
@@ -28,7 +30,7 @@ public class BEntity {
     private void sendCumulativeACK() {
         final int ID = 1;
         int seqNumb = 0;
-        int ackNumb = next;
+        int ackNumb = next > limitSeqNumb ? 0 : next;
         String payload = "";
         int check = checksum.calculateChecksum(seqNumb, ackNumb, payload);
         NetworkSimulator.toLayer3(ID, new Packet(seqNumb, ackNumb, check, payload));
