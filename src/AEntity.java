@@ -12,7 +12,8 @@ public class AEntity {
     private final Checksum checksum;
     private final HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
     private final HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
-
+    private int numOfOriginal;
+    private int numOfRetransmit;
 
     public AEntity(int windowSize, int limitSeqNum, double rxmInterval) {
         this.windowSize = windowSize;
@@ -42,6 +43,7 @@ public class AEntity {
      * @param message: The message that got from the layer 5
      */
     public void output(Message message) {
+        numOfOriginal++;
         Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
         buffer.put(tempSeqNum, packet);
         if(isNotWaiting(packetLastSend)) {
@@ -78,6 +80,7 @@ public class AEntity {
             buffer.remove(ackedNum-1);
             if(ackedNum == windowStartNum && !hasResent) {
                 // this means it is a duplicate ack, retransmit the first unAcked packet, which is windowStartNum
+                numOfRetransmit++;
                 Packet retransmitPacket = buffer.get(windowStartNum);
                 NetworkSimulator.toLayer3(0, retransmitPacket);
                 // timer?
@@ -138,5 +141,13 @@ public class AEntity {
      */
     private boolean isNotWaiting(int packetLastSend) {
         return tempWindowSize < windowSize;
+    }
+
+    public int getNumOfOriginal() {
+        return numOfOriginal;
+    }
+
+    public int getNumOfRetransmit() {
+        return numOfRetransmit;
     }
 }

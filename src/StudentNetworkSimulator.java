@@ -168,8 +168,8 @@ public class StudentNetworkSimulator extends NetworkSimulator
     void Simulation_done() {
         // TO PRINT THE STATISTICS, FILL IN THE DETAILS BY PUTTING VARIBALE NAMES. DO NOT CHANGE THE FORMAT OF PRINTED OUTPUT
         System.out.println("\n\n===============STATISTICS=======================");
-        System.out.println("Number of original packets transmitted by A:" + "<YourVariableHere>");
-        System.out.println("Number of retransmissions by A:" + "<YourVariableHere>");
+        System.out.println("Number of original packets transmitted by A:" + a.getNumOfOriginal());
+        System.out.println("Number of retransmissions by A:" + a.getNumOfRetransmit());
         System.out.println("Number of data packets delivered to layer 5 at B:" + b.getCountTo5());
         System.out.println("Number of ACK packets sent by B:" + b.getCountACK());
         System.out.println("Number of corrupted packets:" + "<YourVariableHere>");

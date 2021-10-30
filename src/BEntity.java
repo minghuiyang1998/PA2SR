@@ -30,7 +30,7 @@ public class BEntity {
     private void sendCumulativeACK() {
         final int ID = 1;
         int seqNumb = 0;
-        int ackNumb = next > limitSeqNumb ? 0 : next;
+        int ackNumb = next >= limitSeqNumb ? 0 : next;
         String payload = "";
         int check = checksum.calculateChecksum(seqNumb, ackNumb, payload);
         NetworkSimulator.toLayer3(ID, new Packet(seqNumb, ackNumb, check, payload));
