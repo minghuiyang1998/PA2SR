@@ -8,6 +8,7 @@ public class AEntity {
     private int windowSize;
     private int tempSeqNum; // the sequence number that
     private int windowStartNum;   // this value is also equal to the first unAcked sequence number
+    private int packetLastSend;
     private Checksum checksum;
     private HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
     private HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
@@ -17,6 +18,7 @@ public class AEntity {
         this.windowSize = windowSize;
         this.tempSeqNum = 0;
         this.windowStartNum = 0;
+        this.packetLastSend = 0;
         this.checksum = new Checksum();
         this.buffer = new HashMap<>();
         this.bufferForSend = new HashMap<>();
@@ -38,9 +40,9 @@ public class AEntity {
     public void output(Message message) {
         Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()));
         buffer.put(tempSeqNum, packet);
-        if(!isWaiting(tempSeqNum)) {
-//            window.add(false);
+        if(isNotWaiting(packetLastSend)) {
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
+            packetLastSend = tempSeqNum;
             NetworkSimulator.startTimer(0, 20);
         } else {
             bufferForSend.put(tempSeqNum, packet);
@@ -57,8 +59,6 @@ public class AEntity {
      */
     public void input(Packet packet) {
         int checkSum = checksum.calculateChecksum(packet);
-        Packet firstUnAckedPacket = null;
-        boolean flag = true;
         if(checkSum == packet.getChecksum()) {
             int ackedNum = packet.getAcknum();
             // if the packet is acknowledged, then remove it from the buffer
@@ -72,6 +72,15 @@ public class AEntity {
             } else {
                 // received the cumulative acknowledgement
                 windowStartNum = ackedNum;
+            }
+
+            // if not in waiting state, check if there are available packets to be sent in bufferForSend
+            if (isNotWaiting(packetLastSend) && !bufferForSend.isEmpty()) {
+               for( ; bufferForSend.isEmpty() || !isNotWaiting(packetLastSend); packetLastSend++) {
+                   Packet sendPacket = bufferForSend.get(packetLastSend+1);
+                   NetworkSimulator.toLayer3(0, sendPacket);
+                   bufferForSend.remove(packetLastSend+1);
+               }
             }
         }
     }
@@ -96,7 +105,12 @@ public class AEntity {
 
     }
 
-    private boolean isWaiting(int tempSeqNum) {
-        return tempSeqNum - windowStartNum + 1 == windowSize;
+    /**
+     * Check if the window is now waiting for an ACK to slide
+     * @param packetLastSend The last sequence number of the temp window
+     * @return true if it is not in waiting state, false otherwise
+     */
+    private boolean isNotWaiting(int packetLastSend) {
+        return packetLastSend - windowStartNum + 1 < windowSize;
     }
 }
