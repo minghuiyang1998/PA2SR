@@ -40,10 +40,11 @@ public class AEntity {
      * @param message: The message that got from the layer 5
      */
     public void output(Message message) {
-        Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()));
+        Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
         buffer.put(tempSeqNum, packet);
         if(isNotWaiting(packetLastSend)) {
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
+            packet.toString();
             packetLastSend = tempSeqNum;
             NetworkSimulator.startTimer(0, rxmInterval);
         } else {

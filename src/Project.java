@@ -186,7 +186,7 @@ public class Project {
         double loss = 0;
         double corrupt = 0;
         double delay = 1000;
-        int trace = 0;
+        int trace = 3;
         int seed = 0;
         int windowsize = 8;
         double timeout = 15.0;
