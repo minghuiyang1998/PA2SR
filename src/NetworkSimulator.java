@@ -30,16 +30,16 @@ public abstract class NetworkSimulator {
     private int nCorrupt;
     private double time;
 
-    final private AEntity a;
-    final private BEntity b;
+    private AEntity a;
+    private BEntity b;
 //    protected abstract void aOutput(Message message);
 //    protected abstract void aInput(Packet packet);
 //    protected abstract void aTimerInterrupt();
-//    protected abstract void aInit();
+    abstract AEntity aInit();
 
 //    protected abstract void bInput(Packet packet);
-//    protected abstract void bInit();
-    protected abstract void Simulation_done();
+    abstract BEntity bInit();
+    abstract void Simulation_done();
 
     public NetworkSimulator(int numMessages,
                             double loss,
@@ -53,8 +53,6 @@ public abstract class NetworkSimulator {
         corruptProb = corrupt;
         avgMessageDelay = avgDelay;
         traceLevel = trace;
-        this.a = new AEntity();
-        this.b = new BEntity();
         eventList = new EventListImpl();
         rand = new OSIRandom(seed);
         try{
@@ -72,8 +70,8 @@ public abstract class NetworkSimulator {
         Event next;
 
         // Perform any student-required initialization
-        a.init();
-        b.init();
+        a = aInit();
+        b = bInit();
 
         // Start the whole thing off by scheduling some data arrival
         // from layer 5

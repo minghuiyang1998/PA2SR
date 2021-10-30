@@ -143,10 +143,9 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // routines are called. It can be used to do any required
     // initialization (e.g. of member variables you add to control the state
     // of entity A).
-//    protected void aInit()
-//    {
-//
-//    }
+     AEntity aInit() {
+        return new AEntity(WindowSize);
+     }
 
     // This routine will be called whenever a packet sent from the B-side 
     // (i.e. as a result of a toLayer3() being done by an A-side procedure)
@@ -161,14 +160,12 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // routines are called. It can be used to do any required
     // initialization (e.g. of member variables you add to control the state
     // of entity B).
-//    protected void bInit()
-//    {
-//
-//    }
-//
+     BEntity bInit() {
+        return new BEntity(WindowSize);
+     }
+
     // Use to print final statistics
-    protected void Simulation_done()
-    {
+    void Simulation_done() {
         // TO PRINT THE STATISTICS, FILL IN THE DETAILS BY PUTTING VARIBALE NAMES. DO NOT CHANGE THE FORMAT OF PRINTED OUTPUT
         System.out.println("\n\n===============STATISTICS=======================");
         System.out.println("Number of original packets transmitted by A:" + "<YourVariableHere>");

@@ -1,5 +1,5 @@
 public class AEntity {
-    AEntity() {
+    AEntity(int windowSize) {
 
     }
     

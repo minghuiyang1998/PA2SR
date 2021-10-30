@@ -1,5 +1,5 @@
 public class BEntity {
-    BEntity() {
+    BEntity(int windowSize) {
 
     }
 
@@ -8,6 +8,9 @@ public class BEntity {
     }
 
     public void input(Packet packet) {
+        // 检查corrupt/
+        // buffer unorder
+
 
     }
 }
