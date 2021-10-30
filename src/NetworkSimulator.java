@@ -15,20 +15,20 @@ public abstract class NetworkSimulator {
     public static final int B = 1;
 
     private int maxMessages;
-    private double lossProb;
-    private double corruptProb;
+    private static double lossProb;
+    private static double corruptProb;
     private double avgMessageDelay;
-    protected int traceLevel;
-    private EventList eventList;
+    protected static int traceLevel;
+    private static EventList eventList;
     private FileWriter outFile;
 
-    private OSIRandom rand;
+    private static OSIRandom rand;
 
     private int nSim;
-    private int nToLayer3;
-    private int nLost;
-    private int nCorrupt;
-    private double time;
+    private static int nToLayer3;
+    private static int nLost;
+    private static int nCorrupt;
+    private static double time;
 
     private AEntity a;
     private BEntity b;
@@ -180,7 +180,7 @@ public abstract class NetworkSimulator {
 
     }
 
-    protected void stopTimer(int entity) {
+    public static void stopTimer(int entity) {
         if (traceLevel > 2)
         {
             System.out.println("stopTimer: stopping timer at " + time);
@@ -197,7 +197,7 @@ public abstract class NetworkSimulator {
         }
     }
 
-    protected void startTimer(int entity, double increment) {
+    protected static void startTimer(int entity, double increment) {
         if (traceLevel > 2) {
             System.out.println("startTimer: starting timer at " + time);
         }
@@ -215,7 +215,7 @@ public abstract class NetworkSimulator {
         }
     }
 
-    protected void toLayer3(int callingEntity, Packet p) {
+    protected static void toLayer3(int callingEntity, Packet p) {
         nToLayer3++;
 
         int destination;
