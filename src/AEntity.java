@@ -123,7 +123,7 @@ public class AEntity {
      * @return true if it is not in waiting state, false otherwise
      */
     private boolean isNotWaiting(int packetLastSend) {
-        if(packetLastSend > windowStartNum)
+        if(packetLastSend >= windowStartNum)
             return packetLastSend - windowStartNum + 1 < windowSize;
         else
             return packetLastSend + limitSeqNum - windowStartNum + 1 < windowSize;
