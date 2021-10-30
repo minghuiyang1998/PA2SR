@@ -1,20 +1,16 @@
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import jdk.nashorn.internal.objects.NativeError;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AEntity {
-    private int windowSize;
+    private final int windowSize;
     private int tempSeqNum; // the sequence number that
     private int windowStartNum;   // this value is also equal to the first unAcked sequence number
     private int packetLastSend;
-    private int limitSeqNum;
-    private double rxmInterval;
+    private final int limitSeqNum;
+    private final double rxmInterval;
     private boolean hasResent;
-    private Checksum checksum;
-    private HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
-    private HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
+    private final Checksum checksum;
+    private final HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
+    private final HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
 
 
     public AEntity(int windowSize, int limitSeqNum, double rxmInterval) {
