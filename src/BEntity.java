@@ -30,7 +30,7 @@ public class BEntity {
     private void sendCumulativeACK() {
         final int ID = 1;
         int seqNumb = 0;
-        int ackNumb = next >= limitSeqNumb ? 0 : next;
+        int ackNumb = next;
         String payload = "";
         int check = checksum.calculateChecksum(seqNumb, ackNumb, payload);
         NetworkSimulator.toLayer3(ID, new Packet(seqNumb, ackNumb, check, payload));
@@ -51,7 +51,7 @@ public class BEntity {
         // send all this consecutive to layer5
         NetworkSimulator.toLayer5(payload);
         countTo5 += 1;
-        next += 1;
+        next = next >= limitSeqNumb - 1 ? 0 : next + 1;
     }
 
     private boolean isDuplicate(int seqNumb) {
