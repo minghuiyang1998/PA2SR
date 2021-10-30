@@ -5,6 +5,7 @@ public class AEntity {
     private int tempSeqNum; // the sequence number that
     private int windowStartNum;   // this value is also equal to the first unAcked sequence number
     private int packetLastSend;
+    private int tempWindowSize;
     private final int limitSeqNum;
     private final double rxmInterval;
     private boolean hasResent;
@@ -20,6 +21,7 @@ public class AEntity {
         this.tempSeqNum = 0;
         this.windowStartNum = 0;
         this.packetLastSend = 0;
+        this.tempWindowSize = 0;
         this.hasResent = false;
         this.checksum = new Checksum();
         this.buffer = new HashMap<>();
@@ -44,8 +46,11 @@ public class AEntity {
         buffer.put(tempSeqNum, packet);
         if(isNotWaiting(packetLastSend)) {
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
-            packet.toString();
+//            System.out.println("Packet: ---------------------");
+//            System.out.println(packet.toString());
+//            System.out.println("------------------------------");
             packetLastSend = tempSeqNum;
+            tempWindowSize++;
             NetworkSimulator.startTimer(0, rxmInterval);
         } else {
             bufferForSend.put(tempSeqNum, packet);
@@ -61,6 +66,10 @@ public class AEntity {
      * @param packet: The packet that got from the layer3 medium
      */
     public void input(Packet packet) {
+//        System.out.println("received packet----------------------------------");
+//        System.out.println(packet.toString());
+//        System.out.println("------------------------------------------");
+
         int checkSum = checksum.calculateChecksum(packet);
         if(checkSum == packet.getChecksum()) {
             NetworkSimulator.stopTimer(0);   // receive a packet, stop timer
@@ -76,6 +85,11 @@ public class AEntity {
                 hasResent = true;
             } else {
                 // received the cumulative acknowledgement
+                if(ackedNum > windowStartNum) {
+                    tempWindowSize -= (ackedNum - windowStartNum);
+                } else {
+                    tempWindowSize -= (ackedNum + limitSeqNum - windowStartNum);
+                }
                 windowStartNum = ackedNum;
             }
 
@@ -123,9 +137,6 @@ public class AEntity {
      * @return true if it is not in waiting state, false otherwise
      */
     private boolean isNotWaiting(int packetLastSend) {
-        if(packetLastSend >= windowStartNum)
-            return packetLastSend - windowStartNum + 1 < windowSize;
-        else
-            return packetLastSend + limitSeqNum - windowStartNum + 1 < windowSize;
+        return tempWindowSize < windowSize;
     }
 }

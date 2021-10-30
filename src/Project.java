@@ -189,7 +189,7 @@ public class Project {
         int trace = 3;
         int seed = 0;
         int windowsize = 8;
-        double timeout = 15.0;
+        double timeout = 1000000.0;
 
         simulator = new StudentNetworkSimulator(nsim, loss, corrupt, delay,
                 trace, seed, windowsize, timeout);
