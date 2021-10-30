@@ -5,6 +5,7 @@ public class BEntity {
     private final Checksum checksum;
     private final HashMap<Integer, Packet> outOfOrderBuffer;
     private int next = 0;
+    private int rightBound = 0;
 
     BEntity(int windowSize) {
         this.windowSize = windowSize;
@@ -32,8 +33,8 @@ public class BEntity {
         return seqNumb < next || outOfOrderBuffer.containsKey(seqNumb);
     }
 
-    private boolean isOverwhelmed() {
-        return 1 + outOfOrderBuffer.size() >= windowSize;
+    private boolean isFull() {
+        return rightBound - next + 1 >= windowSize;
     }
 
     // called by simulator
@@ -52,7 +53,10 @@ public class BEntity {
         }
 
         // 2. If the buffer is full, drop it, else continue
-        if (isOverwhelmed()) return;
+        if (seqNumb > rightBound) {
+            rightBound = seqNumb;
+        }
+        if (isFull()) return;
 
         // 3. If the data packet in-order, deliver the data to layer5 and send ACK to A. Note
         //that you might have subsequent data packets waiting in the buffer at B that also need to be
