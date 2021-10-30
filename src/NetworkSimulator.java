@@ -1,5 +1,3 @@
-import java.util.Vector;
-import java.util.Enumeration;
 import java.io.*;
 
 public abstract class NetworkSimulator {
@@ -32,14 +30,15 @@ public abstract class NetworkSimulator {
     private int nCorrupt;
     private double time;
 
+    final private AEntity a;
+    final private BEntity b;
+//    protected abstract void aOutput(Message message);
+//    protected abstract void aInput(Packet packet);
+//    protected abstract void aTimerInterrupt();
+//    protected abstract void aInit();
 
-    protected abstract void aOutput(Message message);
-    protected abstract void aInput(Packet packet);
-    protected abstract void aTimerInterrupt();
-    protected abstract void aInit();
-
-    protected abstract void bInput(Packet packet);
-    protected abstract void bInit();
+//    protected abstract void bInput(Packet packet);
+//    protected abstract void bInit();
     protected abstract void Simulation_done();
 
     public NetworkSimulator(int numMessages,
@@ -54,6 +53,8 @@ public abstract class NetworkSimulator {
         corruptProb = corrupt;
         avgMessageDelay = avgDelay;
         traceLevel = trace;
+        this.a = new AEntity();
+        this.b = new BEntity();
         eventList = new EventListImpl();
         rand = new OSIRandom(seed);
         try{
@@ -71,8 +72,8 @@ public abstract class NetworkSimulator {
         Event next;
 
         // Perform any student-required initialization
-        aInit();
-        bInit();
+        a.init();
+        b.init();
 
         // Start the whole thing off by scheduling some data arrival
         // from layer 5
@@ -100,7 +101,7 @@ public abstract class NetworkSimulator {
             switch (next.getType()) {
                 case TIMERINTERRUPT:
                     if (next.getEntity() == A) {
-                        aTimerInterrupt();
+                        a.timerInterrupt();
                     } else {
                         System.out.println("INTERNAL PANIC: Timeout for " +
                                 "invalid entity");
@@ -109,9 +110,9 @@ public abstract class NetworkSimulator {
 
                 case FROMLAYER3:
                     if (next.getEntity() == A) {
-                        aInput(next.getPacket());
+                        a.input(next.getPacket());
                     } else if (next.getEntity() == B) {
-                        bInput(next.getPacket());
+                        b.input(next.getPacket());
                     }
                     else {
                         System.out.println("INTERNAL PANIC: Packet has " +
@@ -141,7 +142,7 @@ public abstract class NetworkSimulator {
                     if (nSim == maxMessages+1) break;
 
                     // Let the student handle the new message
-                    aOutput(new Message(new String(nextMessage)));
+                    a.Output(new Message(new String(nextMessage)));
                     break;
 
                 default:

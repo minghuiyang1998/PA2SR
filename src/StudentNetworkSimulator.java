@@ -1,6 +1,3 @@
-import java.util.*;
-import java.io.*;
-
 public class StudentNetworkSimulator extends NetworkSimulator
 {
     /*
@@ -108,7 +105,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
                                    int winsize,
                                    double delay)
     {
-        super(numMessages, loss, corrupt, avgDelay, trace, seed);
+        super(numMessages, loss, corrupt, avgDelay, trace, seed, a, b);
         WindowSize = winsize;
         LimitSeqNo = winsize*2; // set appropriately; assumes SR here!
         RxmtInterval = delay;
@@ -119,56 +116,56 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // has a message to send.  It is the job of your protocol to insure that
     // the data in such a message is delivered in-order, and correctly, to
     // the receiving upper layer.
-    protected void aOutput(Message message)
-    {
-
-    }
+//    protected void aOutput(Message message)
+//    {
+//
+//    }
 
     // This routine will be called whenever a packet sent from the B-side 
     // (i.e. as a result of a toLayer3() being done by a B-side procedure)
     // arrives at the A-side.  "packet" is the (possibly corrupted) packet
     // sent from the B-side.
-    protected void aInput(Packet packet)
-    {
-
-    }
+//    protected void aInput(Packet packet)
+//    {
+//
+//    }
 
     // This routine will be called when A's timer expires (thus generating a 
     // timer interrupt). You'll probably want to use this routine to control 
     // the retransmission of packets. See startTimer() and stopTimer(), above,
     // for how the timer is started and stopped. 
-    protected void aTimerInterrupt()
-    {
-
-    }
+//    protected void aTimerInterrupt()
+//    {
+//
+//    }
 
     // This routine will be called once, before any of your other A-side 
     // routines are called. It can be used to do any required
     // initialization (e.g. of member variables you add to control the state
     // of entity A).
-    protected void aInit()
-    {
-
-    }
+//    protected void aInit()
+//    {
+//
+//    }
 
     // This routine will be called whenever a packet sent from the B-side 
     // (i.e. as a result of a toLayer3() being done by an A-side procedure)
     // arrives at the B-side.  "packet" is the (possibly corrupted) packet
     // sent from the A-side.
-    protected void bInput(Packet packet)
-    {
-
-    }
+//    protected void bInput(Packet packet)
+//    {
+//
+//    }
 
     // This routine will be called once, before any of your other B-side 
     // routines are called. It can be used to do any required
     // initialization (e.g. of member variables you add to control the state
     // of entity B).
-    protected void bInit()
-    {
-
-    }
-
+//    protected void bInit()
+//    {
+//
+//    }
+//
     // Use to print final statistics
     protected void Simulation_done()
     {
