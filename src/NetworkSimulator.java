@@ -20,7 +20,7 @@ public abstract class NetworkSimulator {
     private double avgMessageDelay;
     protected static int traceLevel;
     private static EventList eventList;
-    private FileWriter outFile;
+    private static FileWriter outFile;
 
     private static OSIRandom rand;
 
@@ -292,7 +292,7 @@ public abstract class NetworkSimulator {
         eventList.add(arrival);
     }
 
-    protected void toLayer5(String dataSent) {
+    protected static void toLayer5(String dataSent) {
         try{
             outFile.write(dataSent,0,MAXDATASIZE);
             outFile.write('\n');
