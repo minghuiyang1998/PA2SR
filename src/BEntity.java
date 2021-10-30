@@ -4,13 +4,15 @@ public class BEntity {
     private final int windowSize;
     private final Checksum checksum;
     private final HashMap<Integer, Packet> outOfOrderBuffer;
-    private int next = 0;
-    private int rightBound = 0;
+    private int next;
+    private int rightBound;
 
     BEntity(int windowSize) {
         this.windowSize = windowSize;
         this.checksum = new Checksum();
         this.outOfOrderBuffer = new HashMap<>();
+        this.next = 0;
+        this.rightBound = 0;
     }
 
     private void sendCumulativeACK() {
@@ -22,19 +24,24 @@ public class BEntity {
         NetworkSimulator.toLayer3(ID, new Packet(seqNumb, ackNumb, check, payload));
     }
 
+    private void dealWithOutOfOrder(Packet packet) {
+        int seqNumb = packet.getSeqnum();
+        // If the buffer is full, drop it, else continue
+        if (seqNumb > rightBound && seqNumb - next + 1 >= windowSize) return;
+        outOfOrderBuffer.put(seqNumb, packet);
+        rightBound = Math.max(seqNumb, rightBound);
+        sendCumulativeACK();
+    }
+
     private void dealWithInOrder(Packet packet) {
-        next += 1;
         String payload = packet.getPayload();
         // send all this consecutive to layer5
         NetworkSimulator.toLayer5(payload);
+        next += 1;
     }
 
     private boolean isDuplicate(int seqNumb) {
         return seqNumb < next || outOfOrderBuffer.containsKey(seqNumb);
-    }
-
-    private boolean isFull() {
-        return rightBound - next + 1 >= windowSize;
     }
 
     // called by simulator
@@ -46,17 +53,11 @@ public class BEntity {
             return;
         }
 
-        // If the data packet is duplicate, drop it and send an ACK
+        // 2. If the data packet is duplicate, drop it and send an ACK
         if (isDuplicate(seqNumb)) {
             sendCumulativeACK();
             return;
         }
-
-        // 2. If the buffer is full, drop it, else continue
-        if (seqNumb > rightBound) {
-            rightBound = seqNumb;
-        }
-        if (isFull()) return;
 
         // 3. If the data packet in-order, deliver the data to layer5 and send ACK to A. Note
         //that you might have subsequent data packets waiting in the buffer at B that also need to be
@@ -75,7 +76,6 @@ public class BEntity {
         }
 
         //3. If the data packet is out of order, buffer the data packet and send an ACK
-        outOfOrderBuffer.put(seqNumb, packet);
-        sendCumulativeACK();
+        dealWithOutOfOrder(packet);
     }
 }
