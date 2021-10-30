@@ -1,30 +1,17 @@
-import javafx.util.Pair;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class AEntity {
-    private NetworkSimulator networkSimulator;
     private int windowSize;
-    private int tempSeqNum;
-    private int windowStartNum;
+    private int tempSeqNum; // the sequence number that
+    private int windowStartNum;   // this value is also equal to the first unAcked sequence number
     private boolean waitingForSlide;
     private Checksum checksum;
-    private HashMap<Integer, Packet> buffer;
-    private HashMap<Integer, Packet> bufferForSend;
-    private ArrayList<Pair<Integer, Boolean>> window;
-
-    public AEntity() {
-        this.windowSize = 0;
-        this.tempSeqNum = 0;
-        this.windowStartNum = 0;
-        this.waitingForSlide = false;
-        this.checksum = new Checksum();
-        this.buffer = new HashMap<>();
-        this.bufferForSend = new HashMap<>();
-        this.window = new ArrayList<>();
-    }
+    private HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
+    private HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
+    private ArrayList<Boolean> window;  // record the Ack state of each packet in window
 
     public AEntity(int windowSize) {
         this.windowSize = windowSize;
@@ -37,10 +24,6 @@ public class AEntity {
         this.window = new ArrayList<>();
     }
 
-
-    public void setNetworkSimulator(NetworkSimulator networkSimulator) {
-        this.networkSimulator = networkSimulator;
-    }
 
     // This routine will be called whenever the upper layer at the sender [A]
     // has a message to send.  It is the job of your protocol to insure that
@@ -57,10 +40,10 @@ public class AEntity {
     public void output(Message message) {
         Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()));
         buffer.put(tempSeqNum, packet);
-        window.add(new Pair<>(tempSeqNum, false));
+        window.add();
         if(!waitingForSlide) {
-            networkSimulator.toLayer3(0, packet);
-            networkSimulator.startTimer(0, 20);
+            NetworkSimulator.toLayer3(0, packet);
+            NetworkSimulator.startTimer(0, 20);
             if(window.size() == windowSize) waitingForSlide = true;
         } else {
             bufferForSend.put(tempSeqNum, packet);
@@ -90,9 +73,9 @@ public class AEntity {
                     buffer.remove(packet.getAcknum()); // remove the ACK packet from the buffer
                     if(pair.getValue()) {   // duplicate ACK
                         // retransmit the first unAcked packet
-                        networkSimulator.toLayer3(0, firstUnAckedPacket);
+                        NetworkSimulator.toLayer3(0, firstUnAckedPacket);
                     } else {
-                        networkSimulator.stopTimer(0);
+                        NetworkSimulator.stopTimer(0);
                         // acknowledged the first packet in the window
                         if(index == 0) {
                             window.remove(pair);
@@ -105,7 +88,7 @@ public class AEntity {
                             if (bufferForSend.containsKey(numberBehindWindow)) {
                                 Packet packet1 = bufferForSend.get(numberBehindWindow);
                                 window.add(new Pair<>(numberBehindWindow, false));
-                                networkSimulator.toLayer3(0, packet1);
+                                NetworkSimulator.toLayer3(0, packet1);
                                 bufferForSend.remove(numberBehindWindow);
                             }
                         }
@@ -114,7 +97,7 @@ public class AEntity {
                 } else {
                     // the ack packet is not in the window, which means it is duplicate ack
                     // retransmit the first unAcked packet
-                    networkSimulator.toLayer3(0, firstUnAckedPacket);
+                    NetworkSimulator.toLayer3(0, firstUnAckedPacket);
                 }
             }
         }
