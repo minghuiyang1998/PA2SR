@@ -174,8 +174,8 @@ public class StudentNetworkSimulator extends NetworkSimulator
         System.out.println("Number of data packets delivered to layer 5 at B:" + b.getCountTo5());
         System.out.println("Number of ACK packets sent by B:" + b.getCountACK());
         System.out.println("Number of corrupted packets:" + getnCorrupt());
-        System.out.println(getnToLayer3());
-        System.out.println(getnLost());
+//        System.out.println(getnToLayer3());
+//        System.out.println(getnLost());
         System.out.println("Ratio of lost packets:" + (double)getnLost() / (double)getnToLayer3());
         System.out.println("Ratio of corrupted packets:" + (double)getnCorrupt() / (double)getnToLayer3());
         System.out.println("Average RTT:" + a.getTotalRTT()/a.getCount1());
