@@ -1,4 +1,6 @@
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class BEntity {
     private final int windowSize;
@@ -64,11 +66,13 @@ public class BEntity {
         int seqNumb = packet.getSeqnum();
         int checkSum = checksum.calculateChecksum(packet);
         if (checkSum != packet.getChecksum()) {
+            System.out.println("B corrupt");
             return;
         }
 
         // 2. If the data packet is duplicate, drop it and send an ACK
         if (isDuplicate(seqNumb)) {
+            System.out.println("B duplicate");
             sendCumulativeACK();
             return;
         }
@@ -79,11 +83,16 @@ public class BEntity {
         if (seqNumb == next) {
             dealWithInOrder(packet);
             // check out of buffer, if there are consecutive, addToInOrder()
+            Set<Integer> removed = new HashSet<>();
             for (Integer seq : outOfOrderBuffer.keySet()) {
                 if (seq.equals(next)) {
-                    Packet p = outOfOrderBuffer.remove(next);
+                    Packet p = outOfOrderBuffer.get(seq);
+                    removed.add(seq);
                     dealWithInOrder(p);
                 }
+            }
+            for (Integer r : removed) {
+                outOfOrderBuffer.remove(r);
             }
             sendCumulativeACK();
             return;

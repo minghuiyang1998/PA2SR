@@ -30,6 +30,22 @@ public abstract class NetworkSimulator {
     private static int nCorrupt;
     private static double time;
 
+    public static int getnToLayer3() {
+        return nToLayer3;
+    }
+
+    public int getnSim() {
+        return nSim;
+    }
+
+    public static int getnLost() {
+        return nLost;
+    }
+
+    public static int getnCorrupt() {
+        return nCorrupt;
+    }
+
     AEntity a;
     BEntity b;
 //    protected abstract void aOutput(Message message);
@@ -259,7 +275,8 @@ public abstract class NetworkSimulator {
         arrivalTime = arrivalTime + 1 + (rand.nextDouble(2) * 9);
 
         // Simulate corruption
-        if (rand.nextDouble(3) < corruptProb) {
+        double randProb = rand.nextDouble(3);
+        if (randProb < corruptProb) {
             nCorrupt++;
 
             if (traceLevel > 0) {
