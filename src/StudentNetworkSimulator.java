@@ -170,14 +170,15 @@ public class StudentNetworkSimulator extends NetworkSimulator
         System.out.println("\n\n===============STATISTICS=======================");
         System.out.println("Number of original packets transmitted by A:" + a.getNumOfOriginal());
         System.out.println("Number of retransmissions by A:" + a.getNumOfRetransmit());
+        System.out.println("Number of corrupt packets sent by B:" + a.getReceivedCorruptPackets());
         System.out.println("Number of data packets delivered to layer 5 at B:" + b.getCountTo5());
         System.out.println("Number of ACK packets sent by B:" + b.getCountACK());
         System.out.println("Number of corrupted packets:" + getnCorrupt());
         System.out.println(getnToLayer3());
         System.out.println("Ratio of lost packets:" + getnLost() / getnToLayer3());
         System.out.println("Ratio of corrupted packets:" + getnCorrupt() / getnToLayer3());
-        System.out.println("Average RTT:" + "<YourVariableHere>");
-        System.out.println("Average communication time:" + "<YourVariableHere>");
+        System.out.println("Average RTT:" + a.getTotalRTT()/a.getCount1());
+        System.out.println("Average communication time:" + a.getTotalComTime()/a.getCount2());
         System.out.println("==================================================");
 
         // PRINT YOUR OWN STATISTIC HERE TO CHECK THE CORRECTNESS OF YOUR PROGRAM

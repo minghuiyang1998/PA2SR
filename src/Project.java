@@ -182,14 +182,14 @@ public class Project {
 //        }
 
         StudentNetworkSimulator simulator;
-        int nsim = 100;
-        double loss = 0;
-        double corrupt = 0.3;
+        int nsim = 50;
+        double loss = 0.3;
+        double corrupt = 0.0;
         double delay = 100;
         int trace = 3;
         int seed = 0;
-        int windowsize = 8;
-        double timeout = 3000.0;
+        int windowsize = 2;
+        double timeout = 100.0;
 
         simulator = new StudentNetworkSimulator(nsim, loss, corrupt, delay,
                 trace, seed, windowsize, timeout);
