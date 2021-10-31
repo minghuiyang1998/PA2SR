@@ -59,7 +59,8 @@ public class AEntity {
         Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
         buffer.put(tempSeqNum, packet);
         if(isNotWaiting()) {
-//            sendTime.put(tempSeqNum, NetworkSimulator.getTime());
+            System.out.println("Sequence " + tempSeqNum + " first send time: " + NetworkSimulator.getTime());
+            sendTime.put(tempSeqNum, NetworkSimulator.getTime());
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
 //            System.out.println("Packet: ---------------------");
 //            System.out.println(packet.toString());
@@ -107,14 +108,20 @@ public class AEntity {
             } else {
                 // received the cumulative acknowledgement
                 Double receiveTime = NetworkSimulator.getTime();
-//                if(!retransmitPackets.contains(ackedNum-1)) {
-//                    totalRTT += receiveTime - sendTime.get(ackedNum-1);
-//                    count1++;
-//                }
-//                totalComTime += receiveTime - sendTime.get(ackedNum-1);
-//                count2++;
-//                retransmitPackets.remove(ackedNum-1);
-
+                System.out.println("Sequence " + (ackedNum-1) + " received time: " + receiveTime);
+                double tempTime = ackedNum == 0?
+                        receiveTime - sendTime.get(ackedNum + limitSeqNum - 1) : receiveTime - sendTime.get(ackedNum-1);
+                System.out.println("tempTime = " + tempTime);
+                if(!retransmitPackets.contains(ackedNum-1)) {
+                    System.out.println("It is not retransmit");
+                    totalRTT += tempTime;
+                    System.out.println("totalRTT = " + totalRTT);
+                    count1++;
+                }
+                totalComTime += tempTime;
+                System.out.println("totalComTime = " + totalComTime);
+                count2++;
+                retransmitPackets.remove(ackedNum-1);
 
                 if(ackedNum > windowStartNum) {
                     tempWindowSize -= (ackedNum - windowStartNum);
@@ -130,8 +137,9 @@ public class AEntity {
                for( ; !bufferForSend.isEmpty() && isNotWaiting(); packetLastSend++) {
                    packetLastSend %= limitSeqNum;
                    Packet sendPacket = bufferForSend.get((packetLastSend+1) % limitSeqNum);
-//                   sendTime.put(sendPacket.getSeqnum(), NetworkSimulator.getTime());
                    System.out.println("buffered packet: " + sendPacket.toString());
+                   System.out.println("Sequence " + sendPacket.getSeqnum() + " first send time: " + NetworkSimulator.getTime());
+                   sendTime.put(sendPacket.getSeqnum(), NetworkSimulator.getTime());
                    NetworkSimulator.toLayer3(0, sendPacket);
                    // timer?
                    NetworkSimulator.startTimer(0, rxmInterval);
@@ -161,16 +169,6 @@ public class AEntity {
         NetworkSimulator.stopTimer(0);
         NetworkSimulator.startTimer(0, rxmInterval);
     }
-
-//    /**
-//     * This routine will be called once, before any of your other A-side
-//     * routines are called. It can be used to do any required
-//     * initialization (e.g. of member variables you add to control the state
-//     * of entity A).
-//     */
-//    public void init() {
-//
-//    }
 
     /**
      * Check if the window is now waiting for an ACK to slide
