@@ -1,6 +1,4 @@
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class BEntity {
     private final int windowSize;
@@ -17,6 +15,15 @@ public class BEntity {
         this.checksum = new Checksum();
         this.outOfOrderBuffer = new HashMap<>();
         this.next = 0;
+    }
+
+    private boolean isInWindow(int seqNumb) {
+        Queue<Integer> seqNumbInWindow = new LinkedList<>();
+        for (int i = 0; i < windowSize; i++) {
+            int temp = next + i >= limitSeqNumb ? next + i - limitSeqNumb : next + i;
+            seqNumbInWindow.offer(temp);
+        }
+        return seqNumbInWindow.contains(seqNumb);
     }
 
     public int getCountTo5() {
@@ -78,7 +85,7 @@ public class BEntity {
             sendCumulativeACK();
         } else {
             // in window, out of order
-            if (seqNumb <= next + windowSize - 1 && seqNumb > next) {
+            if (isInWindow(seqNumb)) {
                 //3. If the data packet is out of order, buffer the data packet and send an ACK
                 System.out.println("B out of order");
                 if (!outOfOrderBuffer.containsKey(seqNumb)) {
