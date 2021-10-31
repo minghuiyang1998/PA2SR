@@ -81,7 +81,9 @@ public class BEntity {
             if (seqNumb <= next + windowSize - 1 && seqNumb > next) {
                 //3. If the data packet is out of order, buffer the data packet and send an ACK
                 System.out.println("B out of order");
-                outOfOrderBuffer.put(seqNumb, packet);
+                if (!outOfOrderBuffer.containsKey(seqNumb)) {
+                    outOfOrderBuffer.put(seqNumb, packet);
+                }
                 sendCumulativeACK();
             } else {
                 // out of window, duplicate
