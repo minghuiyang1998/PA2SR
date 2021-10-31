@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -12,7 +13,7 @@ public class AEntity {
     private boolean hasResent;
     private final Checksum checksum;
     private final HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
-    private final HashMap<Integer, Packet> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
+    private final ArrayList<Message> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
     private int numOfOriginal;
     private int numOfRetransmit;
     private int receivedCorruptPackets;
@@ -36,7 +37,7 @@ public class AEntity {
         this.hasResent = false;
         this.checksum = new Checksum();
         this.buffer = new HashMap<>();
-        this.bufferForSend = new HashMap<>();
+        this.bufferForSend = new ArrayList<>();
         this.sendTime = new HashMap<>();
         this.retransmitPackets = new HashSet<>();
     }
@@ -56,23 +57,20 @@ public class AEntity {
      */
     public void output(Message message) {
         numOfOriginal++;
-        Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
-        buffer.put(tempSeqNum, packet);
         if(isNotWaiting()) {
+            Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
+            buffer.put(tempSeqNum, packet);
             System.out.println("Sequence " + tempSeqNum + " first send time: " + NetworkSimulator.getTime());
             sendTime.put(tempSeqNum, NetworkSimulator.getTime());
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
-//            System.out.println("Packet: ---------------------");
-//            System.out.println(packet.toString());
-//            System.out.println("------------------------------");
             packetLastSend = tempSeqNum;
             tempWindowSize++;
             NetworkSimulator.startTimer(0, rxmInterval);
+            tempSeqNum = (tempSeqNum+1) % limitSeqNum;
         } else {
-            System.out.println("buffer the packet: " + packet.toString());
-            bufferForSend.put(tempSeqNum, packet);
+            System.out.println("buffer the Message: " + message.getData());
+            bufferForSend.add(message);
         }
-        tempSeqNum = (tempSeqNum+1) % limitSeqNum;
     }
 
     /**
@@ -112,7 +110,8 @@ public class AEntity {
                 double tempTime = ackedNum == 0?
                         receiveTime - sendTime.get(ackedNum + limitSeqNum - 1) : receiveTime - sendTime.get(ackedNum-1);
                 System.out.println("tempTime = " + tempTime);
-                if(!retransmitPackets.contains(ackedNum-1)) {
+                int lastReceiveNum = ackedNum == 0? ackedNum+limitSeqNum-1:ackedNum-1;
+                if(!retransmitPackets.contains(lastReceiveNum)) {
                     System.out.println("It is not retransmit");
                     totalRTT += tempTime;
                     System.out.println("totalRTT = " + totalRTT);
@@ -121,7 +120,7 @@ public class AEntity {
                 totalComTime += tempTime;
                 System.out.println("totalComTime = " + totalComTime);
                 count2++;
-                retransmitPackets.remove(ackedNum-1);
+                retransmitPackets.remove(lastReceiveNum);
 
                 if(ackedNum > windowStartNum) {
                     tempWindowSize -= (ackedNum - windowStartNum);
@@ -136,15 +135,21 @@ public class AEntity {
                 System.out.println("send the buffered packets");
                for( ; !bufferForSend.isEmpty() && isNotWaiting(); packetLastSend++) {
                    packetLastSend %= limitSeqNum;
-                   Packet sendPacket = bufferForSend.get((packetLastSend+1) % limitSeqNum);
-                   System.out.println("buffered packet: " + sendPacket.toString());
+                   Message message = bufferForSend.remove(0);
+                   Packet sendPacket = new Packet(tempSeqNum, -1,
+                           checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
+                   buffer.put(tempSeqNum, sendPacket);
+                   tempSeqNum = (tempSeqNum+1) % limitSeqNum;
+
+                   System.out.println("Send buffered : " + sendPacket.toString());
                    System.out.println("Sequence " + sendPacket.getSeqnum() + " first send time: " + NetworkSimulator.getTime());
                    sendTime.put(sendPacket.getSeqnum(), NetworkSimulator.getTime());
+
                    NetworkSimulator.toLayer3(0, sendPacket);
                    // timer?
                    NetworkSimulator.startTimer(0, rxmInterval);
                    tempWindowSize++;
-                   bufferForSend.remove((packetLastSend+1) % limitSeqNum);
+
                }
             }
         } else {
