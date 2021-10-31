@@ -8,7 +8,6 @@ public class BEntity {
     private final Checksum checksum;
     private final HashMap<Integer, Packet> outOfOrderBuffer;
     private int next;
-    private int rightBound;
     private int countACK = 0;
     private int countTo5 = 0;
 
@@ -18,7 +17,6 @@ public class BEntity {
         this.checksum = new Checksum();
         this.outOfOrderBuffer = new HashMap<>();
         this.next = 0;
-        this.rightBound = 0;
     }
 
     public int getCountTo5() {
@@ -39,25 +37,12 @@ public class BEntity {
         countACK += 1;
     }
 
-    private void dealWithOutOfOrder(Packet packet) {
-        int seqNumb = packet.getSeqnum();
-        // If the buffer is full, drop it, else continue
-        if (seqNumb > rightBound && seqNumb - next + 1 >= windowSize) return;
-        outOfOrderBuffer.put(seqNumb, packet);
-        rightBound = Math.max(seqNumb, rightBound);
-        sendCumulativeACK();
-    }
-
     private void dealWithInOrder(Packet packet) {
         String payload = packet.getPayload();
         // send all this consecutive to layer5
         NetworkSimulator.toLayer5(payload);
         countTo5 += 1;
         next = next >= limitSeqNumb - 1 ? 0 : next + 1;
-    }
-
-    private boolean isDuplicate(int seqNumb) {
-        return seqNumb < next || outOfOrderBuffer.containsKey(seqNumb);
     }
 
     // called by simulator
@@ -70,13 +55,6 @@ public class BEntity {
         int checkSum = checksum.calculateChecksum(packet);
         if (checkSum != packet.getChecksum()) {
             System.out.println("B corrupt");
-            return;
-        }
-
-        // 2. If the data packet is duplicate, drop it and send an ACK
-        if (isDuplicate(seqNumb)) {
-            System.out.println("B duplicate");
-            sendCumulativeACK();
             return;
         }
 
@@ -98,10 +76,18 @@ public class BEntity {
                 outOfOrderBuffer.remove(r);
             }
             sendCumulativeACK();
-            return;
+        } else {
+            // in window, out of order
+            if (seqNumb <= next + windowSize - 1 && seqNumb > next) {
+                //3. If the data packet is out of order, buffer the data packet and send an ACK
+                System.out.println("B out of order");
+                outOfOrderBuffer.put(seqNumb, packet);
+                sendCumulativeACK();
+            } else {
+                // out of window, duplicate
+                System.out.println("B duplicate");
+                sendCumulativeACK();
+            }
         }
-
-        //3. If the data packet is out of order, buffer the data packet and send an ACK
-        dealWithOutOfOrder(packet);
     }
 }
