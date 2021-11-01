@@ -61,7 +61,7 @@ public class BEntity {
         int seqNumb = packet.getSeqnum();
         int checkSum = checksum.calculateChecksum(packet);
         if (checkSum != packet.getChecksum()) {
-            System.out.println("B corrupt");
+//            System.out.println("B corrupt");
             return;
         }
 
@@ -87,14 +87,14 @@ public class BEntity {
             // in window, out of order
             if (isInWindow(seqNumb)) {
                 //3. If the data packet is out of order, buffer the data packet and send an ACK
-                System.out.println("B out of order");
+//                System.out.println("B out of order");
                 if (!outOfOrderBuffer.containsKey(seqNumb)) {
                     outOfOrderBuffer.put(seqNumb, packet);
                 }
                 sendCumulativeACK();
             } else {
                 // out of window, duplicate
-                System.out.println("B duplicate");
+//                System.out.println("B duplicate");
                 sendCumulativeACK();
             }
         }
