@@ -60,7 +60,7 @@ public class AEntity {
         if(isNotWaiting()) {
             Packet packet = new Packet(tempSeqNum, -1, checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
             buffer.put(tempSeqNum, packet);
-//            System.out.println("Sequence " + tempSeqNum + " first send time: " + NetworkSimulator.getTime());
+            System.out.println("Sequence " + tempSeqNum + " first send time: " + NetworkSimulator.getTime());
             sendTime.put(tempSeqNum, NetworkSimulator.getTime());
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
             packetLastSend = tempSeqNum;
@@ -68,8 +68,9 @@ public class AEntity {
             NetworkSimulator.startTimer(0, rxmInterval);
             tempSeqNum = (tempSeqNum+1) % limitSeqNum;
         } else {
-//            System.out.println("buffer the Message: " + message.getData());
+            System.out.println("buffer the Message: " + message.getData());
             bufferForSend.add(message);
+            System.out.println("now size of the message buffer for send is: " + bufferForSend.size());
         }
     }
 
@@ -81,9 +82,8 @@ public class AEntity {
      * @param packet: The packet that got from the layer3 medium
      */
     public void input(Packet packet) {
-//        System.out.println(" A received packet---------------------------------------------------------------------");
-//        System.out.println(packet.toString());
-//        System.out.println("---------------------------------------------------------------------------------");
+        System.out.println(" A received packet");
+        System.out.println(packet.toString());
 
         int checkSum = checksum.calculateChecksum(packet);
         if(checkSum == packet.getChecksum()) {
@@ -93,13 +93,14 @@ public class AEntity {
             if(ackedNum == 0) buffer.remove(limitSeqNum-1);
             else
                 buffer.remove(ackedNum-1);
+
             if(ackedNum == windowStartNum) {
                 // this means it is a duplicate ack, retransmit the first unAcked packet, which is windowStartNum
-//                System.out.println("A received duplicate ACK, retransmit---------------------------------------------------");
+                System.out.println("A received duplicate ACK, retransmit");
                 numOfRetransmit++;
                 Packet retransmitPacket = buffer.get(windowStartNum);
                 if(retransmitPacket != null) {
-//                    System.out.println("retransmitPacket: " + retransmitPacket.toString());
+                    System.out.println("retransmitPacket: " + retransmitPacket.toString());
                     retransmitPackets.add(retransmitPacket.getSeqnum());
                     sendTime.put(retransmitPacket.getSeqnum(), NetworkSimulator.getTime());
                     NetworkSimulator.toLayer3(0, retransmitPacket);
@@ -111,19 +112,19 @@ public class AEntity {
 //                hasResent = false;
                 // received the cumulative acknowledgement
                 Double receiveTime = NetworkSimulator.getTime();
-//                System.out.println("Sequence " + (ackedNum-1) + " received time: " + receiveTime);
+                System.out.println("Sequence " + (ackedNum-1) + " received time: " + receiveTime);
                 int lastReceiveNum = ackedNum == 0? ackedNum+limitSeqNum-1:ackedNum-1;
                 double tempTime = receiveTime - sendTime.get(lastReceiveNum);
-//                System.out.println("tempTime = " + tempTime);
+                System.out.println("tempTime = " + tempTime);
 
                 if(!retransmitPackets.contains(lastReceiveNum)) {
-//                    System.out.println("It is not retransmit");
+                    System.out.println("It is not retransmit");
                     totalRTT += tempTime;
-//                    System.out.println("totalRTT = " + totalRTT);
+                    System.out.println("totalRTT = " + totalRTT);
                     count1++;
                 }
                 totalComTime += tempTime;
-//                System.out.println("totalComTime = " + totalComTime);
+                System.out.println("totalComTime = " + totalComTime);
                 count2++;
                 retransmitPackets.remove(lastReceiveNum);
 
@@ -137,7 +138,7 @@ public class AEntity {
 
             // if not in waiting state, check if there are available packets to be sent in bufferForSend
             if (isNotWaiting() && !bufferForSend.isEmpty()) {
-//                System.out.println("send the buffered packets");
+                System.out.println("send the buffered packets");
                for( ; !bufferForSend.isEmpty() && isNotWaiting(); packetLastSend++) {
                    packetLastSend %= limitSeqNum;
                    Message message = bufferForSend.remove(0);
@@ -146,8 +147,8 @@ public class AEntity {
                    buffer.put(tempSeqNum, sendPacket);
                    tempSeqNum = (tempSeqNum+1) % limitSeqNum;
 
-//                   System.out.println("Send buffered : " + sendPacket.toString());
-//                   System.out.println("Sequence " + sendPacket.getSeqnum() + " first send time: " + NetworkSimulator.getTime());
+                   System.out.println("Send buffered : " + sendPacket.toString());
+                   System.out.println("Sequence " + sendPacket.getSeqnum() + " first send time: " + NetworkSimulator.getTime());
                    sendTime.put(sendPacket.getSeqnum(), NetworkSimulator.getTime());
 
                    NetworkSimulator.toLayer3(0, sendPacket);
@@ -158,7 +159,7 @@ public class AEntity {
                }
             }
         } else {
-//            System.out.println("A received corrupt Ack");
+            System.out.println("A received corrupt Ack");
             receivedCorruptPackets++;
         }
     }
@@ -171,12 +172,12 @@ public class AEntity {
      */
     public void timerInterrupt() {
         // not sure whether it's correct
-//        System.out.println("A timeout, retransmit---------------------------------------------------------");
+        System.out.println("A timeout, retransmit---------------------------------------------------------");
         numOfRetransmit++;
         Packet timoutPacket = buffer.get(windowStartNum);
         retransmitPackets.add(timoutPacket.getSeqnum());
         NetworkSimulator.toLayer3(0, timoutPacket);
-        NetworkSimulator.stopTimer(0);
+//        NetworkSimulator.stopTimer(0);
         NetworkSimulator.startTimer(0, rxmInterval);
     }
 

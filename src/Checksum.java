@@ -6,6 +6,7 @@ public class Checksum {
      */
     public int calculateChecksum(Packet packet) {
         int ret = packet.getSeqnum() + packet.getAcknum();
+
         String payload = packet.getPayload();
         for(int i = 0; i < payload.length(); i++) {
             ret += payload.charAt(i);
