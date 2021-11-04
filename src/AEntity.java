@@ -172,7 +172,7 @@ public class AEntity {
      */
     public void timerInterrupt() {
         // not sure whether it's correct
-        System.out.println("A timeout, retransmit---------------------------------------------------------");
+        System.out.println("A timeout, retransmit");
         numOfRetransmit++;
         Packet timoutPacket = buffer.get(windowStartNum);
         retransmitPackets.add(timoutPacket.getSeqnum());

@@ -72,9 +72,8 @@ public class BEntity {
 
     // called by simulator
     public void input(Packet packet) {
-        System.out.println(" B received packet-------------------------------------------------------------------");
+        System.out.println(" B received packet");
         System.out.println(packet.toString());
-        System.out.println("--------------------------------------------------------------------------------");
         // 1. Check if the packet is corrupted and drop it
         int seqNumb = packet.getSeqnum();
         int checkSum = checksum.calculateChecksum(packet);
