@@ -177,8 +177,10 @@ public class StudentNetworkSimulator extends NetworkSimulator
         System.out.println("Number of lost packets: " + getnLost());
         System.out.println("Number of total packets sent to layer3: " + getnToLayer3());
 
-        System.out.println("Ratio of lost packets:" + (double)getnLost() / (double)getnToLayer3());
-        System.out.println("Ratio of corrupted packets:" + (double)getnCorrupt() / (double)getnToLayer3());
+        System.out.println("Ratio of lost packets:" +
+                (double)(a.getNumOfRetransmit()- getnCorrupt()) / (double)((a.getNumOfOriginal()+ a.getNumOfRetransmit())+b.getCountACK()));
+        System.out.println("Ratio of corrupted packets:" +
+                (double)getnCorrupt() / (double)((a.getNumOfOriginal() + a.getNumOfRetransmit()) + b.getCountACK()-(a.getNumOfRetransmit()-getnCorrupt())));
         System.out.println("Average RTT:" + a.getTotalRTT()/a.getCount1());
         System.out.println("Average communication time:" + a.getTotalComTime()/a.getCount2());
         System.out.println("==================================================");

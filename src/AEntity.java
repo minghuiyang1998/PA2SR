@@ -6,11 +6,9 @@ public class AEntity {
     private final int windowSize;
     private int tempSeqNum; // the sequence number that
     private int windowStartNum;   // this value is also equal to the first unAcked sequence number
-    private int packetLastSend;
     private int tempWindowSize;
     private final int limitSeqNum;
     private final double rxmInterval;
-//    private boolean hasResent;
     private final Checksum checksum;
     private final HashMap<Integer, Packet> buffer;  // buffer all the unAcked packets that generated from received messages
     private final ArrayList<Message> bufferForSend;  // buffer all the packets that generated from received messages but are not sent yet.
@@ -30,11 +28,9 @@ public class AEntity {
         this.rxmInterval = rxmInterval;
         this.tempSeqNum = 0;
         this.windowStartNum = 0;
-        this.packetLastSend = 0;
         this.tempWindowSize = 0;
         this.totalRTT = 0.0;
         this.totalComTime = 0.0;
-//        this.hasResent = false;
         this.checksum = new Checksum();
         this.buffer = new HashMap<>();
         this.bufferForSend = new ArrayList<>();
@@ -63,7 +59,6 @@ public class AEntity {
             System.out.println("Sequence " + tempSeqNum + " first send time: " + NetworkSimulator.getTime());
             sendTime.put(tempSeqNum, NetworkSimulator.getTime());
             NetworkSimulator.toLayer3(0, packet); // send the packet to layer3 and transfer
-            packetLastSend = tempSeqNum;
             tempWindowSize++;
             NetworkSimulator.startTimer(0, rxmInterval);
             tempSeqNum = (tempSeqNum+1) % limitSeqNum;
@@ -90,26 +85,33 @@ public class AEntity {
             NetworkSimulator.stopTimer(0);   // receive a packet, stop timer
             int ackedNum = packet.getAcknum();
             // if the packet is acknowledged, then remove it from the buffer
-            if(ackedNum == 0) buffer.remove(limitSeqNum-1);
-            else
-                buffer.remove(ackedNum-1);
+            if(windowStartNum < ackedNum) {
+                for(int i = windowStartNum; i < ackedNum; i++) {
+                    buffer.remove(i);
+                }
+            } else if(windowStartNum > ackedNum) {
+                for(int i = windowStartNum; i < ackedNum + limitSeqNum; i++) {
+                    if(i >= limitSeqNum)
+                        buffer.remove(i-limitSeqNum);
+                    buffer.remove(i);
+                }
+            }
+            System.out.println("after remove " + buffer);
 
             if(ackedNum == windowStartNum) {
                 // this means it is a duplicate ack, retransmit the first unAcked packet, which is windowStartNum
-                System.out.println("A received duplicate ACK, retransmit");
-                numOfRetransmit++;
+                System.out.println("A received duplicate ACK");
                 Packet retransmitPacket = buffer.get(windowStartNum);
                 if(retransmitPacket != null) {
+                    numOfRetransmit++;
                     System.out.println("retransmitPacket: " + retransmitPacket.toString());
                     retransmitPackets.add(retransmitPacket.getSeqnum());
                     sendTime.put(retransmitPacket.getSeqnum(), NetworkSimulator.getTime());
                     NetworkSimulator.toLayer3(0, retransmitPacket);
-                    // timer?
                     NetworkSimulator.startTimer(0, rxmInterval);
-//                    hasResent = true;
                 }
+
             } else {
-//                hasResent = false;
                 // received the cumulative acknowledgement
                 Double receiveTime = NetworkSimulator.getTime();
                 System.out.println("Sequence " + (ackedNum-1) + " received time: " + receiveTime);
@@ -139,24 +141,22 @@ public class AEntity {
             // if not in waiting state, check if there are available packets to be sent in bufferForSend
             if (isNotWaiting() && !bufferForSend.isEmpty()) {
                 System.out.println("send the buffered packets");
-               for( ; !bufferForSend.isEmpty() && isNotWaiting(); packetLastSend++) {
-                   packetLastSend %= limitSeqNum;
-                   Message message = bufferForSend.remove(0);
-                   Packet sendPacket = new Packet(tempSeqNum, -1,
-                           checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
-                   buffer.put(tempSeqNum, sendPacket);
-                   tempSeqNum = (tempSeqNum+1) % limitSeqNum;
+                while (!bufferForSend.isEmpty() && isNotWaiting()) {
+                    Message message = bufferForSend.remove(0);
+                    Packet sendPacket = new Packet(tempSeqNum, -1,
+                            checksum.calculateChecksum(tempSeqNum, -1, message.getData()), message.getData());
+                    buffer.put(tempSeqNum, sendPacket);
+                    tempSeqNum = (tempSeqNum+1) % limitSeqNum;
 
-                   System.out.println("Send buffered : " + sendPacket.toString());
-                   System.out.println("Sequence " + sendPacket.getSeqnum() + " first send time: " + NetworkSimulator.getTime());
-                   sendTime.put(sendPacket.getSeqnum(), NetworkSimulator.getTime());
+                    System.out.println("Send buffered : " + sendPacket.toString());
+                    System.out.println("Sequence " + sendPacket.getSeqnum() + " first send time: " + NetworkSimulator.getTime());
+                    sendTime.put(sendPacket.getSeqnum(), NetworkSimulator.getTime());
 
-                   NetworkSimulator.toLayer3(0, sendPacket);
-                   // timer?
-                   NetworkSimulator.startTimer(0, rxmInterval);
-                   tempWindowSize++;
+                    NetworkSimulator.toLayer3(0, sendPacket);
+                    NetworkSimulator.startTimer(0, rxmInterval);
+                    tempWindowSize++;
 
-               }
+                }
             }
         } else {
             System.out.println("A received corrupt Ack");
@@ -175,10 +175,11 @@ public class AEntity {
         System.out.println("A timeout, retransmit");
         numOfRetransmit++;
         Packet timoutPacket = buffer.get(windowStartNum);
-        retransmitPackets.add(timoutPacket.getSeqnum());
-        NetworkSimulator.toLayer3(0, timoutPacket);
-//        NetworkSimulator.stopTimer(0);
-        NetworkSimulator.startTimer(0, rxmInterval);
+        if(timoutPacket != null) {
+            retransmitPackets.add(timoutPacket.getSeqnum());
+            NetworkSimulator.toLayer3(0, timoutPacket);
+            NetworkSimulator.startTimer(0, rxmInterval);
+        }
     }
 
     /**
