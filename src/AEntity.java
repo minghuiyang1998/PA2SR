@@ -96,7 +96,7 @@ public class AEntity {
                     buffer.remove(i);
                 }
             }
-            System.out.println("after remove " + buffer);
+//            System.out.println("after remove " + buffer);
 
             if(ackedNum == windowStartNum) {
                 // this means it is a duplicate ack, retransmit the first unAcked packet, which is windowStartNum
