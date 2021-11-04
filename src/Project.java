@@ -183,17 +183,27 @@ public class Project {
 
 //        StudentNetworkSimulator simulator;
         int nsim = 1000;
-        double loss = 0.1;
-        double corrupt = 0.1;
+        double loss = 0.0;
+        double corrupt = 0.0;
         double delay = 200;
         int trace = 3;
         int seed = 1234;
         int windowsize = 8;
         double timeout = 30.0;
 
-        simulator = new StudentNetworkSimulator(nsim, loss, corrupt, delay,
-                trace, seed, windowsize, timeout);
+        double[] ratios = new double[]{0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5};
+        //loss
+        for (double ratio : ratios) {
+            simulator = new StudentNetworkSimulator(nsim, ratio, corrupt, delay,
+                    trace, seed, windowsize, timeout);
+            simulator.runSimulator();
+        }
 
-        simulator.runSimulator();
+        //corrupt
+        for (double ratio : ratios) {
+            simulator = new StudentNetworkSimulator(nsim, loss, ratio, delay,
+                    trace, seed, windowsize, timeout);
+            simulator.runSimulator();
+        }
     }
 }

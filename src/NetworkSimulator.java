@@ -21,6 +21,9 @@ public abstract class NetworkSimulator {
     protected static int traceLevel;
     private static EventList eventList;
     private static FileWriter outFile;
+    protected static FileWriter dataFile;
+    protected static double startSimulate;
+    protected static double endSimulate;
 
     private static OSIRandom rand;
 
@@ -73,7 +76,27 @@ public abstract class NetworkSimulator {
         rand = new OSIRandom(seed);
         try{
             outFile = new FileWriter("OutputFile");
+            dataFile = new FileWriter("dataFile.txt", true);
         } catch (Exception e) {e.printStackTrace();}
+
+//        try{
+//            if (lossProb > 0) {
+//                dataFile.write("lossRatio ");
+//            }
+//            if (corruptProb > 0) {
+//                dataFile.write("corruptRatio ");
+//            }
+//            dataFile.write("numbTransmitByA ");
+//            dataFile.write( "numbRetransmitByA ");
+//            dataFile.write("countBTo5 ");
+//            dataFile.write("countBAck ");
+//            dataFile.write( "corruptPkts ");
+//            dataFile.write("ratioLost ");
+//            dataFile.write("ratioCorrupt ");
+//            dataFile.write("averRTT ");
+//            dataFile.write("averCommuTime ");
+//            dataFile.write('\n');
+//        } catch (Exception e) {e.printStackTrace();}
 
         nSim = 0;
         nToLayer3 = 0;
@@ -88,6 +111,7 @@ public abstract class NetworkSimulator {
         // Perform any student-required initialization
         a = aInit();
         b = bInit();
+        startSimulate = getTime();
 
         // Start the whole thing off by scheduling some data arrival
         // from layer 5
@@ -166,7 +190,13 @@ public abstract class NetworkSimulator {
                 break;
         }
         System.out.println("Simulator terminated at time "+getTime());
+        endSimulate = getTime();
         Simulation_done();
+        try{
+            dataFile.flush();
+            dataFile.close();
+        }catch (Exception e) {e.printStackTrace();}
+
         try{
             outFile.flush();
             outFile.close();
