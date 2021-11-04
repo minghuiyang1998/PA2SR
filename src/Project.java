@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Project {
     public final static void main(String[] argv) {
@@ -191,19 +192,29 @@ public class Project {
         int windowsize = 8;
         double timeout = 30.0;
 
+        int[] seeds = new int[100];
+        for (int i = 0; i < 100; i++) {
+            seeds[i] = ThreadLocalRandom.current().nextInt();
+        }
+
         double[] ratios = new double[]{0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5};
         //loss
         for (double ratio : ratios) {
-            simulator = new StudentNetworkSimulator(nsim, ratio, corrupt, delay,
-                    trace, seed, windowsize, timeout);
-            simulator.runSimulator();
+            for (int s : seeds) {
+                simulator = new StudentNetworkSimulator(nsim, ratio, corrupt, delay,
+                        trace, s, windowsize, timeout);
+                simulator.runSimulator();
+            }
         }
+
 
         //corrupt
         for (double ratio : ratios) {
-            simulator = new StudentNetworkSimulator(nsim, loss, ratio, delay,
-                    trace, seed, windowsize, timeout);
-            simulator.runSimulator();
+            for (int s : seeds) {
+                simulator = new StudentNetworkSimulator(nsim, loss, ratio, delay,
+                        trace, s, windowsize, timeout);
+                simulator.runSimulator();
+            }
         }
     }
 }
