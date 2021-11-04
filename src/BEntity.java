@@ -52,6 +52,24 @@ public class BEntity {
         next = next >= limitSeqNumb - 1 ? 0 : next + 1;
     }
 
+    private boolean dealWithOutOfBuffer(Packet packet) {
+        boolean isNextUpdate = false;
+        // check out of buffer, if there are consecutive, addToInOrder()
+        Set<Integer> removed = new HashSet<>();
+        for (Integer seq : outOfOrderBuffer.keySet()) {
+            if (seq.equals(next)) {
+                Packet p = outOfOrderBuffer.get(seq);
+                removed.add(seq);
+                isNextUpdate = true;
+                dealWithInOrder(p);
+            }
+        }
+        for (Integer r : removed) {
+            outOfOrderBuffer.remove(r);
+        }
+        return isNextUpdate;
+    }
+
     // called by simulator
     public void input(Packet packet) {
 //        System.out.println(" B received packet-------------------------------------------------------------------");
@@ -70,17 +88,9 @@ public class BEntity {
         //delivered to layer5
         if (seqNumb == next) {
             dealWithInOrder(packet);
-            // check out of buffer, if there are consecutive, addToInOrder()
-            Set<Integer> removed = new HashSet<>();
-            for (Integer seq : outOfOrderBuffer.keySet()) {
-                if (seq.equals(next)) {
-                    Packet p = outOfOrderBuffer.get(seq);
-                    removed.add(seq);
-                    dealWithInOrder(p);
-                }
-            }
-            for (Integer r : removed) {
-                outOfOrderBuffer.remove(r);
+            boolean isNextUpdate = true;
+            while (isNextUpdate) {
+                isNextUpdate = dealWithOutOfBuffer(packet);
             }
             sendCumulativeACK();
         } else {
