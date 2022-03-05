@@ -1,2 +1,2 @@
-# PA2SR
- Implementing Selective-Repeat (with cumulative ACKs)
+# Simulator SR
+ Implementing Selective-Repeat protocol (with cumulative ACKs)
